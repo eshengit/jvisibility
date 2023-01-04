@@ -1,0 +1,4 @@
+**/*.pyc
+.idea/*
+agent-backend/.idea/*
+agent-backend/.DS_Store
