@@ -3,9 +3,7 @@ import logging
 import os
 import subprocess
 from datetime import datetime, timedelta
-
 import pytz
-
 from .exceptions import NoProcessFoundException
 
 USER_TIME_FORMAT = '%Y-%m-%d-%H-%M'
@@ -14,6 +12,8 @@ CURRENT_TIME_SUFFIX_FORMAT = "%M%S"
 UTC_TIMEZONE = pytz.timezone('UTC')
 DUMP_SUFFIX = "-dump"
 PROC_SUFFIX = '-proc'
+
+
 # Get a logger
 logger = logging.getLogger('backend')
 
@@ -94,7 +94,7 @@ def get_java_process_id(process_name):
 
 def prepare_dump(dump_root):
     # Create a datetime object for the current time in UTC
-    t = datetime.datetime.now(UTC_TIMEZONE)
+    t = datetime.now(UTC_TIMEZONE)
 
     current_time_suffix = t.strftime(CURRENT_TIME_SUFFIX_FORMAT)
     current_dump_dir = dump_root + "/" + t.strftime(DUMP_DIR_TIME_FORMAT)
@@ -106,7 +106,7 @@ def prepare_dump(dump_root):
 
 def run_single_jstack(jstack_cmd, pid, current_dump_dir, current_time_prefix):
     # Run jstack and dump its output to a file
-    current_jstack_dump = current_dump_dir + "/%s-%s" % (current_time_prefix, DUMP_SUFFIX)
+    current_jstack_dump = current_dump_dir + "/%s%s" % (current_time_prefix, DUMP_SUFFIX)
     with open(current_jstack_dump, "w") as f:
         subprocess.Popen([jstack_cmd, str(pid)], stdout=f, stderr=f)
     return current_jstack_dump
@@ -137,9 +137,10 @@ def get_first_1000_bytes_from_file(previous_dump_file):
 
 
 def validate_dump_file(file_name):
-    if file_name is None:
-        return True
     if not os.path.exists(file_name):
+        logger.info("%s does not exist" % file_name)
         return False
     if os.path.getsize(file_name) < 1000:
+        logger.info("%s size small" % file_name)
         return False
+    return True

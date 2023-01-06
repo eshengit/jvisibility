@@ -4,21 +4,21 @@ import logging.config
 import threading
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS, cross_origin
 
-import backend.cpu_analyzer
-from backend.functions import get_next_n_dump_records, get_time_in_utc_timezone, from_record_dump_file_name, from_record_proc_file_name
 from backend import OpStatus
 from backend import ProfilingRunner
-from backend.stats import StatsController
 from backend.cpu_analyzer import CPUAnalyzerController
-
+from backend.functions import get_next_n_dump_records, get_time_in_utc_timezone, from_record_dump_file_name, \
+    from_record_proc_file_name
+from backend.stats import StatsController
 
 # shared state variable
 app = Flask(__name__)
+#CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 dump_root_dir = "/var/tmp"
 snapshot_runner = ProfilingRunner(dump_root_dir)
-STATUS = 'status'
-MESSAGE = 'message'
 runner_thread = None
 DEFAULT_TIMEZONE = "US/Pacific"
 
@@ -82,14 +82,23 @@ def start_snapshot_runner():
 @app.route('/', methods=['GET'])
 def status():
     status = snapshot_runner.status()
-    response = create_response(status.status.name,
-                               "profiling process:'%s' %s" % (status.process_name, status.status_msg))
+    response = create_response(status.status.name, status.status_msg)
+    if len(status.process_name) > 0:
+        response['PROCESS NAME'] = status.process_name
     return jsonify(response)
 
 
+def get_parameter(key):
+    if request.headers.get('Content-Type') is None or request.headers.get('Content-Type') != 'application/json':
+        return request.args.get(key)
+    else:
+        return json.loads(request.data).get('p')
+
+
 @app.route('/start', methods=['POST'])
+@cross_origin()
 def start():
-    process_name = request.args.get('p')
+    process_name = get_parameter('p')
     op_status, message = snapshot_runner.set_or_update_process_to_profile(process_name)
     return jsonify(create_response(op_status.name, message))
 
@@ -102,7 +111,7 @@ def stop():
 
 def get_query_start_time():
     # time query parameter in form yyyy-mm-dd-hh-mm
-    user_time_string = request.args.get('st')
+    user_time_string = get_parameter('st')
     if user_time_string is None:
         return jsonify(create_response(OpStatus.FAILURE),
                        "you have to specify parameter duration for the java stats in form of yyyy-mm-dd-hh-mm")
@@ -123,10 +132,11 @@ def stats():
 
     return jsonify(json.dumps(trace_object, default=lambda x: x.__dict__))
 
+
 @app.route('/cpu', methods=['POST'])
 def cpu():
     query_start_time = get_query_start_time()
-    cpu_type = request.args.get('type')
+    cpu_type = get_parameter('type')
     list_of_dump_records = []
     get_next_n_dump_records(dump_root_dir, query_start_time, list_of_dump_records, 10)
     dump_file = from_record_dump_file_name(list_of_dump_records[-1])

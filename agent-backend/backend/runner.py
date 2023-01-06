@@ -103,7 +103,7 @@ class ProfilingRunner:
     def set_or_update_process_to_profile(self, new_process_to_snapshot):
         # we do not have process name update
         if new_process_to_snapshot is None or new_process_to_snapshot == '':
-            if self.process_name == '':
+            if self.state.process_name == '':
                 return OpStatus.FAILURE, "you have to set process name you want to profile"
             else:
                 return self.state.update_state(process_name=self.state.process_name)
