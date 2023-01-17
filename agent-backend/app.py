@@ -1,4 +1,5 @@
 import atexit
+import datetime
 import json
 import logging.config
 import threading
@@ -10,7 +11,7 @@ from backend import OpStatus
 from backend import ProfilingRunner
 from backend.cpu_analyzer import CPUAnalyzerController
 from backend.functions import get_next_n_dump_records, get_time_in_utc_timezone, from_record_dump_file_name, \
-    from_record_proc_file_name
+    from_record_proc_file_name, get_latest_dump_records
 from backend.stats import StatsController
 
 # shared state variable
@@ -131,6 +132,16 @@ def stats():
     trace_object = StatsController.run(from_record_dump_file_name(list_of_dump_records[0]))
 
     return jsonify(json.dumps(trace_object, default=lambda x: x.__dict__))
+
+
+@app.route('/deadlock', methods=['POST'])
+@cross_origin()
+def deadlock():
+    latest_dump_file = from_record_dump_file_name(get_latest_dump_records(dump_root_dir))
+    if latest_dump_file is None:
+        return jsonify(create_response(OpStatus.SUCCESS.name, "{}"))
+    trace_object = StatsController.run(latest_dump_file)
+    return jsonify(create_response(OpStatus.SUCCESS.name, json.dumps(trace_object, default=lambda x: x.__dict__)))
 
 
 @app.route('/cpu', methods=['POST'])

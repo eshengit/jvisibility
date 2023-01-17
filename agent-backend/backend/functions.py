@@ -41,6 +41,17 @@ def get_dump_info_for_given_minute(root_dir, start_datetime):
     return record_dir, minute_prefix_int
 
 
+def get_latest_dump_records(root_dir):
+    start_datetime = datetime.utcnow()
+    start_datetime = start_datetime - timedelta(seconds=10)
+    list_of_records = []
+    get_next_n_dump_records(root_dir, start_datetime, list_of_records, 10)
+    if len(list_of_records) > 0:
+        return list_of_records[-1]
+    else:
+        return None
+
+
 def get_next_n_dump_records(root_dir, start_datetime, list_of_record, number_of_records=1):
     record_dir, minute_and_seconds_prefix_int = get_dump_info_for_given_minute(root_dir, start_datetime)
     get_list_of_records(list_of_record, record_dir, minute_and_seconds_prefix_int, number_of_records)
@@ -53,6 +64,8 @@ def get_next_n_dump_records(root_dir, start_datetime, list_of_record, number_of_
 
 
 def from_record_dump_file_name(record):
+    if record is None:
+        return record
     return "%s/%s%s" %(record.record_dir, record.record_prefix, DUMP_SUFFIX)
 
 
@@ -137,6 +150,8 @@ def get_first_1000_bytes_from_file(previous_dump_file):
 
 
 def validate_dump_file(file_name):
+    if file_name is None:
+        return True
     if not os.path.exists(file_name):
         logger.info("%s does not exist" % file_name)
         return False

@@ -107,6 +107,7 @@ class ProfilingRunner:
                 return OpStatus.FAILURE, "you have to set process name you want to profile"
             else:
                 return self.state.update_state(process_name=self.state.process_name)
+        new_process_to_snapshot = new_process_to_snapshot.strip()
         if new_process_to_snapshot == self.state.process_name:
             return self.state.update_state(process_name=self.state.process_name)
 

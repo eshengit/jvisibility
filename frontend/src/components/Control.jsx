@@ -1,64 +1,113 @@
 import React, {useEffect, useState} from "react";
-import { InputGroup, Input, InputLeftAddon, Button, Box, Textarea, Stack, List, ListItem, Divider} from '@chakra-ui/react';
+import { Flex, Input, Button, Stack, Table, Tbody, Td, Th, Thead, Tr} from '@chakra-ui/react';
+import PropTypes from 'prop-types';
+import "../App.css"
 
 
-export default function Control() {
+export default function Control({isSelected}) {
   const [processName, setProcessName] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
+  const [count, setCount] = useState(0);
+  const [alert, setAlert] = useState(false);
+  const [loadChangeInput, setLoadChangeInput] = useState(true);
+  
 
-  const getStatus = async () => {
-    const response = await fetch("http://localhost:8080/")
-    const statusResponse = await response.json()
-    setStatusMsg(statusResponse)
-}
+  const shouldLoadChangeInput = (jsonResponse) => {
+    if (jsonResponse != null && jsonResponse.STATUS != null && jsonResponse.STATUS === 'SUCCESS'){
+        setLoadChangeInput(false)   
+    }else{
+        setLoadChangeInput(true)
+    }
+  }
+
+  const getStatus =  () => {
+    console.log("start progress")
+    setTimeout(() => {getStatusFromServer()}, (count == 0)? 0: 15000)
+  }
+
+  const getStatusFromServer = async () => {
+    fetch("http://localhost:8080/").then((response)=> response.json()).then((jsonResponse) => {
+      setStatusMsg(jsonResponse)
+      shouldLoadChangeInput(jsonResponse)
+      console.log("status msg", jsonResponse.STATUS)
+      console.log("end progress, status retrieved", (count == 0)? 0: 15000, count, jsonResponse)
+    })
+  }
+
+  useEffect(() => {    
+    if(isSelected){
+      console.log("control jsx is selected")
+      getStatus()
+    }
+  }, [count, isSelected])
 
   useEffect(() => {
-    getStatus()
-  }, [])
+    if(alert) {
+      setTimeout(() => {
+        setAlert(false);
+      }, 2000)
+    }
+  }, [alert])
 
   const handleInput = (event) => {
       setProcessName(event.target.value)
   };
 
   const handleSubmit = (event) => {
-    event.preventDefault();
-
+    event.preventDefault();   
     // Send a POST request to the server with the value of the text field
-    console.log(processName)
-    fetch("http://localhost:8080/start", {
-      method: 'POST',
-      mode: 'cors',
-      body: JSON.stringify({
-        p: processName,
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    getStatus()
+    if(loadChangeInput){
+      setLoadChangeInput(false)
+      fetch("http://localhost:8080/start", {
+          method: 'POST',
+          mode: 'cors',
+          body: JSON.stringify({
+            p: processName,
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+      });
+      setCount(count + 1)
+      setAlert(true)      
+    }else{     
+      setLoadChangeInput(true)
+    }
   };
 
   return (
     <Stack spacing={4}>
       <Button colorScheme='facebook'>Current Status</Button>
-      <List>
-      {Object.entries(statusMsg).map(([key, value]) => (
-        <ListItem key={key} color={key !== 'SUCCESS' ? 'red.500' : 'green.500'}>
-          {key}: {value}
-        </ListItem>
-      ))}
-    </List>
+    
+      <Table  variant='striped' colorScheme='facebook'>
+      <Tbody>
+        <Tr >
+          <Td>Status</Td>
+          <Td color={statusMsg.STATUS === 'SUCCESS' ? "green" : "red"}>{statusMsg.STATUS}</Td>
+        </Tr>
+        <Tr >
+          <Td>Process Name</Td>
+          <Td>{statusMsg['PROCESS NAME']}</Td>
+        </Tr>
+        <Tr >
+          <Td>Details</Td>
+          <Td>{statusMsg.MESSAGE}</Td>
+        </Tr>
+      </Tbody>
+    </Table>
     <form onSubmit={handleSubmit}>
-      <Button type="submit" colorScheme='facebook'>Change</Button>
-      <div>
-      <Divider my={2} />
-      </div>
-       <Textarea
-        value={processName}
-        onChange={handleInput}
-        placeholder='Enter JVM Process you want to profile'
-        size='sm'/>
+      {alert && <p>Change is made successful</p>}
+       <Flex>     
+        <Button mr={2} type="submit" colorScheme='facebook'>Change Process To Profile</Button>
+        {loadChangeInput &&    
+        <Input w="20%" mr={2} placeholder="process name to profile" value={processName} onChange={handleInput}/>
+        }        
+      </Flex>
     </form>
     </Stack>
   );
+}
+
+Control.propTypes = {
+ isSelected: PropTypes.bool.isRequired
 }

@@ -9,9 +9,9 @@ RUN apk update && \
         py3-pip
 
 # install the default java app to monitor
-COPY tests/test-resources/Main.java /tmp/
-RUN chmod 777 /tmp/Main.java
-RUN cd /tmp && javac Main.java
+COPY tests/test-resources/Deadlock.java /tmp/
+RUN chmod 777 /tmp/Deadlock.java
+RUN cd /tmp && javac Deadlock.java
 
 # install the java profiling agent and it's runtime environment
 RUN mkdir /opt/agent-backend
