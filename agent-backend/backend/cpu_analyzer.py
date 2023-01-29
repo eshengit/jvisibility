@@ -22,9 +22,9 @@ class CPUAnalyzerController:
         self.current_key = None
         self.current_trace = []
 
-    def run(self):
+    def run(self, isUserCPU):
         self.traces = CPUAnalyzerController.get_traces(self.last_dump)
-        return CPUAnalyzerController.build_traces_by_cpu(self.first_proc, self.last_proc, self.traces)
+        return CPUAnalyzerController.build_traces_by_cpu(self.first_proc, self.last_proc, self.traces, isUserCPU)
 
     @staticmethod
     def parse_proc_line(line, user_dir, sys_dir):
@@ -42,7 +42,7 @@ class CPUAnalyzerController:
         return sorted(delta_cpu_with_trace, key = operator.attrgetter('cpu_ticks'), reverse = True)
 
     @staticmethod
-    def build_traces_by_cpu(firstProc, lastProc, traces):
+    def build_traces_by_cpu(firstProc, lastProc, traces, isUserCPU):
         baseline_user_cpu = {}
         baseline_sys_cpu = {}
         target_user_cpu = {}
@@ -54,10 +54,10 @@ class CPUAnalyzerController:
             for line in f:
                 CPUAnalyzerController.parse_proc_line(line, target_user_cpu, target_sys_cpu)
 
-        return CPUAnalyzerController.grow_list(target_user_cpu, baseline_user_cpu, traces)[:15], CPUAnalyzerController.grow_list(target_sys_cpu,
-                                          baseline_sys_cpu,
-                                          traces)[:15]
-
+        if isUserCPU:
+            return CPUAnalyzerController.grow_list(target_user_cpu, baseline_user_cpu, traces)[:10]
+        else:
+            return CPUAnalyzerController.grow_list(target_sys_cpu, baseline_sys_cpu, traces)[:10]
 
     @staticmethod
     def find_key(line):

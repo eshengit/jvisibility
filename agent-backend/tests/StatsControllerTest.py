@@ -22,11 +22,8 @@ class MyTestCase(unittest.TestCase):
 
         json_string = json.dumps(trace_stats, default=lambda x: x.__dict__)
         print(json_string)
-        list = [json_string]
-
-        json_string = json.dumps(list)
-        #print(json_string)
-
+        #list = [json_string]
+        #json_string = json.dumps(list)
 
         self.assertEqual(len(json.loads(json_string).get("thread_group_list")[0]["variation_map_per_thread_group"]), 1)
 

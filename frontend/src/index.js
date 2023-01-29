@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { ChakraProvider, Tabs, TabList, TabPanels, Tab, TabPanel, EditableTextarea, Button, Box } from "@chakra-ui/react";
 import Header from "./components/Header";
 import Control  from "./components/Control";
 import Deadlock  from "./components/Deadlock";
+import CPU from "./components/CPU";
 
 function App() {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -32,8 +33,7 @@ function App() {
           <Button>Click me</Button>
         </TabPanel>
         <TabPanel index={3}>
-          <p>Content for tab 4</p>
-          <Button>Click me</Button>
+           <CPU isSelected={isSelected(3)}/>
         </TabPanel>
       </TabPanels>
       </Tabs>
@@ -41,5 +41,8 @@ function App() {
   )
 }
 
-const rootElement = document.getElementById("root")
-render(<App />, rootElement)
+ReactDOM.createRoot(
+  document.getElementById("root")
+).render(<App />)
+
+

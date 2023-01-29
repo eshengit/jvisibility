@@ -22,8 +22,11 @@ class CPUAnalyzerControllerTestCase(unittest.TestCase):
         first = "test-resources/firstProc"
         last = "test-resources/lastProc"
         analyzer = backend.CPUAnalyzerController(first, last, dump)
-        user_cpu, sys_cpu = analyzer.run()
+        user_cpu = analyzer.run(True)
+        sys_cpu = analyzer.run(False)
         print(json.dumps(user_cpu, default=lambda x: x.__dict__))
+        print("start")
+        print(user_cpu[0].trace)
 
         self.assertEqual(user_cpu[0].cpu_ticks, 101)
         self.assertEqual(user_cpu[0].thread_id, "41219")

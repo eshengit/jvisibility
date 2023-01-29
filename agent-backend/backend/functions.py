@@ -3,16 +3,17 @@ import logging
 import os
 import subprocess
 from datetime import datetime, timedelta
+
 import pytz
+
 from .exceptions import NoProcessFoundException
 
-USER_TIME_FORMAT = '%Y-%m-%d-%H-%M'
+USER_TIME_FORMAT = '%Y/%m/%d:%H:%M:%S'
 DUMP_DIR_TIME_FORMAT = "%Y-%m-%d-%H"
 CURRENT_TIME_SUFFIX_FORMAT = "%M%S"
 UTC_TIMEZONE = pytz.timezone('UTC')
 DUMP_SUFFIX = "-dump"
 PROC_SUFFIX = '-proc'
-
 
 # Get a logger
 logger = logging.getLogger('backend')
@@ -24,10 +25,19 @@ class Record(object):
         self.record_prefix = record_prefix
 
 
+def get_number_in_string(minute_and_seconds_prefix_int):
+    num = int(minute_and_seconds_prefix_int / 100)
+    if num < 10:
+        return "0%d" % num
+    else:
+        return "%d" % num
+
 def get_list_of_records(list_of_record, record_dir, minute_and_seconds_prefix_int, number_of_records):
     count = 0
+    logger.info("glob %s/%s*%s" % (record_dir, get_number_in_string(minute_and_seconds_prefix_int), DUMP_SUFFIX))
     list = map(lambda s: os.path.basename(s), sorted(
-        glob.glob("%s/%s*%s" % (record_dir, int(minute_and_seconds_prefix_int / 100), DUMP_SUFFIX)), key=os.path.getmtime))
+        glob.glob("%s/%s*%s" % (record_dir, get_number_in_string(minute_and_seconds_prefix_int), DUMP_SUFFIX)),
+        key=os.path.getmtime))
     for name in map(lambda s: s.replace(DUMP_SUFFIX, ''), list):
         list_of_record.append(Record(record_dir, name))
         count += 1
@@ -54,6 +64,7 @@ def get_latest_dump_records(root_dir):
 
 def get_next_n_dump_records(root_dir, start_datetime, list_of_record, number_of_records=1):
     record_dir, minute_and_seconds_prefix_int = get_dump_info_for_given_minute(root_dir, start_datetime)
+    logger.info("dir %s prefix %s" % (record_dir, minute_and_seconds_prefix_int))
     get_list_of_records(list_of_record, record_dir, minute_and_seconds_prefix_int, number_of_records)
 
     current_records = len(list_of_record)
@@ -66,11 +77,11 @@ def get_next_n_dump_records(root_dir, start_datetime, list_of_record, number_of_
 def from_record_dump_file_name(record):
     if record is None:
         return record
-    return "%s/%s%s" %(record.record_dir, record.record_prefix, DUMP_SUFFIX)
+    return "%s/%s%s" % (record.record_dir, record.record_prefix, DUMP_SUFFIX)
 
 
 def from_record_proc_file_name(record):
-    return "%s/%s%s" %(record.record_dir, record.record_prefix, PROC_SUFFIX)
+    return "%s/%s%s" % (record.record_dir, record.record_prefix, PROC_SUFFIX)
 
 
 def get_time_in_utc_timezone(user_time_string, user_timezone):

@@ -2,6 +2,8 @@ import React, {useEffect, useState} from "react";
 import { Flex, Input, Button, Stack, Table, Tbody, Td, Th, Thead, Tr} from '@chakra-ui/react';
 import PropTypes from 'prop-types';
 import "../App.css"
+import { getServerStatus } from "./API"
+import { updateProcessToProfile } from "./API"
 
 
 export default function Control({isSelected}) {
@@ -25,14 +27,14 @@ export default function Control({isSelected}) {
     setTimeout(() => {getStatusFromServer()}, (count == 0)? 0: 15000)
   }
 
-  const getStatusFromServer = async () => {
-    fetch("http://localhost:8080/").then((response)=> response.json()).then((jsonResponse) => {
+  const getStatusFromServer =  () => {
+      getServerStatus().then(jsonResponse => {
       setStatusMsg(jsonResponse)
       shouldLoadChangeInput(jsonResponse)
       console.log("status msg", jsonResponse.STATUS)
-      console.log("end progress, status retrieved", (count == 0)? 0: 15000, count, jsonResponse)
-    })
+      console.log("end progress, status retrieved", (count == 0)? 0: 15000, count, jsonResponse)})
   }
+  
 
   useEffect(() => {    
     if(isSelected){
@@ -58,16 +60,7 @@ export default function Control({isSelected}) {
     // Send a POST request to the server with the value of the text field
     if(loadChangeInput){
       setLoadChangeInput(false)
-      fetch("http://localhost:8080/start", {
-          method: 'POST',
-          mode: 'cors',
-          body: JSON.stringify({
-            p: processName,
-          }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-      });
+      updateProcessToProfile(processName)
       setCount(count + 1)
       setAlert(true)      
     }else{     

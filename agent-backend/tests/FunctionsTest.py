@@ -9,12 +9,12 @@ from pathlib import Path
 class MyTestCase(unittest.TestCase):
 
     def test_timezone_conversion(self):
-        self.assertEqual(backend.functions.get_time_in_utc_timezone("2023-01-03-17-27", "US/Pacific").strftime('%m-%d-%H-%M'),
+        self.assertEqual(backend.functions.get_time_in_utc_timezone("2023/01/03:17:27:00", "US/Pacific").strftime('%m-%d-%H-%M'),
                          '01-04-01-27')
 
     def test_get_next_n_records(self):
         # get_next_n_records(root_dir, start_datetime, list_of_record, number_of_records=1):
-        start_time = backend.functions.get_time_in_utc_timezone("2023-01-03-17-27", "US/Pacific")
+        start_time = backend.functions.get_time_in_utc_timezone("2023/01/03:17:27:00", "US/Pacific")
         root_dir = "/var/tmp/"
         hourly_dir = root_dir + "/"  + start_time.strftime(backend.functions.DUMP_DIR_TIME_FORMAT)
         if not os.path.exists(hourly_dir):
@@ -50,7 +50,7 @@ class MyTestCase(unittest.TestCase):
 
         # max dump will not greater than all the files available
         list_of_record_none_exist= []
-        time_does_not_exist = backend.functions.get_time_in_utc_timezone("2023-01-03-18-27", "US/Pacific")
+        time_does_not_exist = backend.functions.get_time_in_utc_timezone("2023/01/03:18:27:00", "US/Pacific")
         backend.functions.get_next_n_dump_records(root_dir, time_does_not_exist, list_of_record_none_exist, 16)
         self.assertEqual(len(list_of_record_none_exist), 0)
 

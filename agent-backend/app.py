@@ -3,6 +3,7 @@ import datetime
 import json
 import logging.config
 import threading
+import traceback
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
@@ -22,6 +23,7 @@ dump_root_dir = "/var/tmp"
 snapshot_runner = ProfilingRunner(dump_root_dir)
 runner_thread = None
 DEFAULT_TIMEZONE = "US/Pacific"
+CPU_TYPE_USER="User"
 
 # Dictionary with logging configuration
 logging_config = {
@@ -93,7 +95,7 @@ def get_parameter(key):
     if request.headers.get('Content-Type') is None or request.headers.get('Content-Type') != 'application/json':
         return request.args.get(key)
     else:
-        return json.loads(request.data).get('p')
+        return json.loads(request.data).get(key)
 
 
 @app.route('/start', methods=['POST'])
@@ -111,8 +113,9 @@ def stop():
 
 
 def get_query_start_time():
-    # time query parameter in form yyyy-mm-dd-hh-mm
+    # time query parameter in form yyyy-mm-dd-hh-mm-ss
     user_time_string = get_parameter('st')
+    logger.info("user time %s" % user_time_string)
     if user_time_string is None:
         return jsonify(create_response(OpStatus.FAILURE),
                        "you have to specify parameter duration for the java stats in form of yyyy-mm-dd-hh-mm")
@@ -130,6 +133,7 @@ def stats():
     list_of_dump_records = []
     get_next_n_dump_records(dump_root_dir, query_start_time, list_of_dump_records)
     trace_object = StatsController.run(from_record_dump_file_name(list_of_dump_records[0]))
+    logger.info("trace ob %d" % trace_object.total_thread_count)
 
     return jsonify(json.dumps(trace_object, default=lambda x: x.__dict__))
 
@@ -150,10 +154,15 @@ def cpu():
     cpu_type = get_parameter('type')
     list_of_dump_records = []
     get_next_n_dump_records(dump_root_dir, query_start_time, list_of_dump_records, 10)
+
+    if len(list_of_dump_records) == 0:
+        return jsonify(create_response(OpStatus.SUCCESS.name, json.dumps(list_of_dump_records, default=lambda x: x.__dict__)))
+
     dump_file = from_record_dump_file_name(list_of_dump_records[-1])
     first_proc_file = from_record_proc_file_name(list_of_dump_records[0])
-    last_proc_file = from_record_proc_file_name(list_of_dump_records[-2])
-    CPUAnalyzerController(first_proc_file, last_proc_file, dump_file).run()
+    last_proc_file = from_record_proc_file_name(list_of_dump_records[-1])
+    cpu_report = CPUAnalyzerController(first_proc_file, last_proc_file, dump_file).run((cpu_type == CPU_TYPE_USER))
+    return jsonify(create_response(OpStatus.SUCCESS.name, json.dumps(cpu_report, default=lambda x: x.__dict__)))
 
 
 if __name__ == '__main__':
