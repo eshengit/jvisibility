@@ -1,44 +1,44 @@
 import React, {useEffect, useState} from "react";
 import { Box, Button, Collapse, Radio, Flex, Input, FormControl, FormErrorMessage, Stack, Text, Table, Tbody, Tr, Td, Thead, Th} from "@chakra-ui/react";
 import PropTypes from 'prop-types';
-import {getCPUReport} from "./API"
+import {getStatsReport} from "./API"
 import moment from "moment"
-import ExpandableCPU from "./ExpandableCPU"
+import ExpandableStats from "./ExpandableStats"
 
 
-export default function CPU({isSelected}) {
-  const [cpuAnalysisMode, setCpuAnalysisMode] = useState("User");
+export default function Stats({isSelected}) {
+  const [statsReport, setStatsReport] = useState({});
   const [startDate, setStartDate] = useState("");
-  const [isValid, setIsValid] = useState(true);
-  const [cpuReport, setCpuReport] = useState({});
   const [displayReport, setDisplayReport] = useState(false);
   const [useCurrentTime, setUseCurrentTime] = useState("Current");
   const [currentTimeString, setCurrentTimeString] = useState();
   const [currentMoment, setCurrentMoment] = useState();
- 
 
   useEffect(() => {
     if (isSelected){
-      console.log("cpu jsx is selected")
+      console.log("stats jsx is selected")
     }
   }, [isSelected])
- 
-  useEffect(() => {
-    onCPUAnalysisModeChange();
-  }, [cpuAnalysisMode]);
 
-const useCurrentTimeMode = () => {return useCurrentTime === 'Current'}
-const moveNext = () => {
-  if(useCurrentTimeMode){
-      let new_moment = moment(currentMoment).subtract(51, 'seconds');
-      setCurrentMoment(new_moment);
-      setCurrentTimeString(new_moment.format('YYYY/MM/DD:HH:mm:ss')) 
-  }else{
-      let new_moment = moment(startDate, 'YYYY/MM/DD:HH:mm:ss')
-      setStartDate(moment(new_moment).subtract(51, 'seconds').format('YYYY/MM/DD:HH:mm:ss')) 
+  const handleNextTime = (event) => {
+      event.preventDefault();
+      handleFetchStatsReport()
   }
-}
-const handleFetchCPUReport = async () => {
+
+  const useCurrentTimeMode = () => {return useCurrentTime === 'Current'}
+
+  const moveNext = () => {
+    if(useCurrentTimeMode){
+        let new_moment = moment(currentMoment).subtract(51, 'seconds');
+        setCurrentMoment(new_moment);
+        setCurrentTimeString(new_moment.format('YYYY/MM/DD:HH:mm:ss')) 
+    }else{
+        let new_moment = moment(startDate, 'YYYY/MM/DD:HH:mm:ss')
+        setStartDate(moment(new_moment).subtract(51, 'seconds').format('YYYY/MM/DD:HH:mm:ss')) 
+    }
+  }
+
+  const handleFetchStatsReport = async () => {
       var startTime
       if(useCurrentTimeMode){
         var m,ms
@@ -60,79 +60,30 @@ const handleFetchCPUReport = async () => {
       if(typeof startTime === 'undefined')
         return 
 
-      moveNext();  
+      moveNext(); 
 
-      const json_response = await getCPUReport(startTime, cpuAnalysisMode)
+      const json_response = await getStatsReport(startTime)
       const report = JSON.parse(json_response['MESSAGE'])
       console.log(json_response)
-        
+
       if(report.length === 0){
           alert("no profiling record in time range:" + startTime)
           setDisplayReport(false)          
       }else{
-        setCpuReport(report)
+        setStatsReport(report)
         setDisplayReport(true)
       }
-  };
-
-const handleNextTime = (event) => {
-      event.preventDefault();      
-      handleFetchCPUReport();
-}
-
-const onCPUAnalysisModeChange = () => {
-    handleFetchCPUReport()
-}
-
-function handleBlur() {
-    if (!startDate) {
-      setIsValid(true);
-      return;
-    }
-
-    // check if the string is in the format of "2022/01/20:09:15:10"
-    const dateTimeRegex = /^\d{4}\/\d{2}\/\d{2}:\d{2}:\d{2}:\d{2}$/;
-    if (!dateTimeRegex.test(startDate)) {
-      setIsValid(false);
-      return;
-    }
-    // check if the date and time is valid
-    const date = new Date(startDate);
-    if (isNaN(date.getTime())) {
-      setIsValid(false);
-      return;
-    }
-    setIsValid(true);
   }
-  
 
   return (
     <Stack spacing={5}>
-
-    <Flex>
-      <Button w="100%" colorScheme='facebook'>
-        Analyze By CPU Type
-      </Button>
-    </Flex>
-
-    <Flex>
-    <Radio mr={5}
-        isChecked={cpuAnalysisMode === "User"}
-        value="User"
-        onChange={(e) => setCpuAnalysisMode(e.target.value)}>User CPU</Radio>
-    <Radio mr={5}
-        isChecked={cpuAnalysisMode === "Sys"}
-        value="Sys"
-        onChange={(e) => setCpuAnalysisMode(e.target.value)}>Sys CPU</Radio>
-    </Flex>
-
     <Flex>
       <Button w="100%" colorScheme='facebook'>
         Pick Time Range To Analyze 
       </Button>
     </Flex>
-    
-  <Flex>
+
+   <Flex>
      <Radio mr={5} 
       isChecked={useCurrentTime === "Current"} 
       value="Current" 
@@ -154,37 +105,51 @@ function handleBlur() {
     </Box>
   </Flex>
 
-  
   <Flex>
-     <form onSubmit={handleNextTime}>
+     <form onSubmit={handleNextTime}> 
+      { useCurrentTimeMode && <Box> {currentTimeString} </Box>}
+      { !useCurrentTime && <Box> {startDate} </Box>}
       <Button mr={2} type="submit" colorScheme='facebook'>Get next</Button>
      </form>
   </Flex>
 
-   <Flex>
+  <Flex>
       <Button w="100%" colorScheme='facebook'>
         Result 
       </Button>
     </Flex>
+  {displayReport &&
+    <Table key="1" variant='striped' colorScheme='facebook'>
+       <Thead>
+        <Tr>
+          <Th>Total Threads: {statsReport.total_thread_count}</Th>
+          <Th>Total Unique Thread Groups: {statsReport.total_thread_group_count}</Th>
+        </Tr>
+        </Thead>
+    </Table>
+  }
   {displayReport && 
-   <Table variant='striped' colorScheme='facebook'>
+   <Table key="2" variant='striped' colorScheme='facebook'>
      <Thead>
       <Tr>
-        <Th># of CPU Ticks</Th>
-        <Th>Stack Trace: {useCurrentTime? currentTimeString:startDate} </Th>
+        <Th>Thread Group</Th>
+        <Th>Thread Counts</Th>
+        <Th># Of Distinct Traces</Th>
       </Tr>
     </Thead>
       <Tbody>
-         {cpuReport.map((trace) => (
-          <ExpandableCPU trace={trace}/>
-        ))}   
+        {statsReport.thread_group_list.map((t) => (
+          <ExpandableStats trace={t}/>
+        ))} 
       </Tbody>
     </Table> }
 
   </Stack>
   );
-}
 
-CPU.propTypes = {
+
+
+}
+Stats.propTypes = {
  isSelected: PropTypes.bool.isRequired
 }

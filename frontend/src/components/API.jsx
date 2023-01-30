@@ -25,6 +25,20 @@ export function getServerDeadlock(){
     }).then(response => response.json());
 }
 
+export function getStatsReport(startTime){
+    console.log("stats call ", startTime)
+    return fetch("http://localhost:8080/stats", {
+          method: 'POST',
+          mode: 'cors',
+          body: JSON.stringify({
+            st: startTime
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+    }).then((response)=> response.json());
+}
+
 export function getCPUReport(startTime, cpuType){
     console.log("cpu call ", startTime, cpuType)
     return fetch("http://localhost:8080/cpu", {

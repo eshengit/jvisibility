@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Control  from "./components/Control";
 import Deadlock  from "./components/Deadlock";
 import CPU from "./components/CPU";
+import Stats from "./components/Stats";
 
 function App() {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -18,8 +19,8 @@ function App() {
       <TabList>
         <Tab >Manage Profiling</Tab>
         <Tab >Suspect Deadlock</Tab>
-        <Tab >Suspect Slowness</Tab>
         <Tab >Suspect High CPU</Tab>
+        <Tab >Suspect Slowness</Tab>
       </TabList>
       <TabPanels>
         <TabPanel index={0}>
@@ -29,11 +30,10 @@ function App() {
          <Deadlock isSelected={isSelected(1)}/>
         </TabPanel>
         <TabPanel index={2}>
-          <p>Content for tab 3</p>
-          <Button>Click me</Button>
+           <CPU isSelected={isSelected(2)}/>
         </TabPanel>
         <TabPanel index={3}>
-           <CPU isSelected={isSelected(3)}/>
+          <Stats isSelected={isSelected(3)}/>
         </TabPanel>
       </TabPanels>
       </Tabs>

@@ -128,14 +128,14 @@ def get_query_start_time():
 
 
 @app.route('/stats', methods=['POST'])
+@cross_origin()
 def stats():
     query_start_time = get_query_start_time()
     list_of_dump_records = []
     get_next_n_dump_records(dump_root_dir, query_start_time, list_of_dump_records)
     trace_object = StatsController.run(from_record_dump_file_name(list_of_dump_records[0]))
     logger.info("trace ob %d" % trace_object.total_thread_count)
-
-    return jsonify(json.dumps(trace_object, default=lambda x: x.__dict__))
+    return jsonify(create_response(OpStatus.SUCCESS.name,json.dumps(trace_object, default=lambda x: x.__dict__)))
 
 
 @app.route('/deadlock', methods=['POST'])
@@ -149,6 +149,7 @@ def deadlock():
 
 
 @app.route('/cpu', methods=['POST'])
+@cross_origin()
 def cpu():
     query_start_time = get_query_start_time()
     cpu_type = get_parameter('type')
