@@ -1,0 +1,12 @@
+version: '3'
+services:
+  backend:
+    image: agent-backend:latest
+    ports:
+      - "8080:8080"
+  frontend:
+    image: agent-frontend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      SERVICE1_HOST: backend

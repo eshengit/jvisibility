@@ -1,9 +1,16 @@
+
+export const backendHost = "localhost"
+export const backendPort = "8080"
+export const url = "http://" + backendHost + ":" + backendPort + "/"
+
 export function  getServerStatus(){
-    return fetch("http://localhost:8080/").then((response)=> response.json())
+    console.log("url:",url)
+    return fetch(url).then((response)=> response.json())
 }
 
 export function updateProcessToProfile(processName){
-    fetch("http://localhost:8080/start", {
+    console.log("process:",url)
+    fetch(url + "start", {
           method: 'POST',
           mode: 'cors',
           body: JSON.stringify({
@@ -16,7 +23,7 @@ export function updateProcessToProfile(processName){
 }
 
 export function getServerDeadlock(){
-  return fetch("http://localhost:8080/deadlock", {
+  return fetch(url + "deadlock", {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -27,7 +34,7 @@ export function getServerDeadlock(){
 
 export function getStatsReport(startTime){
     console.log("stats call ", startTime)
-    return fetch("http://localhost:8080/stats", {
+    return fetch(url + "stats", {
           method: 'POST',
           mode: 'cors',
           body: JSON.stringify({
@@ -41,7 +48,7 @@ export function getStatsReport(startTime){
 
 export function getCPUReport(startTime, cpuType){
     console.log("cpu call ", startTime, cpuType)
-    return fetch("http://localhost:8080/cpu", {
+    return fetch(url + "cpu", {
           method: 'POST',
           mode: 'cors',
           body: JSON.stringify({

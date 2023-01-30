@@ -114,8 +114,8 @@ export default function Stats({isSelected}) {
      <form onSubmit={handleNextTime}> 
       { useCurrentTimeMode && <Box> {currentTimeString} </Box>}
       { !useCurrentTime && <Box> {startDate} </Box>}
-      <Button mr={2} colorScheme='facebook' onClick={handleRefresh}>Refresh Current</Button>
       <Button mr={2} type="submit" colorScheme='facebook'>Get next</Button>
+      <Button mr={2} colorScheme='facebook' onClick={handleRefresh}>Refresh Current</Button>
      </form>
   </Flex>
 

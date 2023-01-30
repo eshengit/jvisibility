@@ -24,6 +24,7 @@ export default function CPU({isSelected}) {
   }, [isSelected])
  
   useEffect(() => {
+    if(isSelected)
       onCPUAnalysisModeChange();
   }, [cpuAnalysisMode]);
 
@@ -161,8 +162,8 @@ function handleBlur() {
   
   <Flex>
      <form onSubmit={handleNextTime}>
-      <Button mr={2} colorScheme='facebook' onClick={handleRefresh}>Refresh Current</Button>
       <Button mr={2} type="submit" colorScheme='facebook'>Get next</Button>
+      <Button mr={2} colorScheme='facebook' onClick={handleRefresh}>Refresh Current</Button>
      </form>
   </Flex>
 

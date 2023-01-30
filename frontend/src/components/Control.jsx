@@ -47,7 +47,7 @@ export default function Control({isSelected}) {
     if(alert) {
       setTimeout(() => {
         setAlert(false);
-      }, 2000)
+      }, 15000)
     }
   }, [alert])
 
@@ -89,7 +89,7 @@ export default function Control({isSelected}) {
       </Tbody>
     </Table>
     <form onSubmit={handleSubmit}>
-      {alert && <p>Change is made successful</p>}
+      {alert && <p>Change is made successfully</p>}
        <Flex>     
         <Button mr={2} type="submit" colorScheme='facebook'>Change Process To Profile</Button>
         {loadChangeInput &&    
