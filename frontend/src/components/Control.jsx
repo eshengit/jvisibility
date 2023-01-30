@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { Flex, Input, Button, Stack, Table, Tbody, Td, Th, Thead, Tr} from '@chakra-ui/react';
+import { Box, Flex, Input, Button, Stack, Table, Tbody, Td, Th, Thead, Tr} from '@chakra-ui/react';
 import PropTypes from 'prop-types';
 import "../App.css"
 import { getServerStatus } from "./API"
@@ -97,6 +97,7 @@ export default function Control({isSelected}) {
         }        
       </Flex>
     </form>
+    <Box>Default demo program to choose is "Example"</Box>
     </Stack>
   );
 }

@@ -133,9 +133,11 @@ def stats():
     query_start_time = get_query_start_time()
     list_of_dump_records = []
     get_next_n_dump_records(dump_root_dir, query_start_time, list_of_dump_records)
+    if len(list_of_dump_records) == 0:
+        return jsonify(create_response(OpStatus.SUCCESS.name, json.dumps({}, default=lambda x: x.__dict__)))
     trace_object = StatsController.run(from_record_dump_file_name(list_of_dump_records[0]))
     logger.info("trace ob %d" % trace_object.total_thread_count)
-    return jsonify(create_response(OpStatus.SUCCESS.name,json.dumps(trace_object, default=lambda x: x.__dict__)))
+    return jsonify(create_response(OpStatus.SUCCESS.name, json.dumps(trace_object, default=lambda x: x.__dict__)))
 
 
 @app.route('/deadlock', methods=['POST'])

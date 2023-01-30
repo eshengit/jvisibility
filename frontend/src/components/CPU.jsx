@@ -8,7 +8,7 @@ import ExpandableCPU from "./ExpandableCPU"
 
 export default function CPU({isSelected}) {
   const [cpuAnalysisMode, setCpuAnalysisMode] = useState("User");
-  const [startDate, setStartDate] = useState("");
+  const [startDate, setStartDate] = useState();
   const [isValid, setIsValid] = useState(true);
   const [cpuReport, setCpuReport] = useState({});
   const [displayReport, setDisplayReport] = useState(false);
@@ -24,9 +24,13 @@ export default function CPU({isSelected}) {
   }, [isSelected])
  
   useEffect(() => {
-    onCPUAnalysisModeChange();
+      onCPUAnalysisModeChange();
   }, [cpuAnalysisMode]);
 
+const handleRefresh = () => {
+    setCurrentMoment(undefined)
+    setCurrentTimeString(undefined)
+  }
 const useCurrentTimeMode = () => {return useCurrentTime === 'Current'}
 const moveNext = () => {
   if(useCurrentTimeMode){
@@ -157,6 +161,7 @@ function handleBlur() {
   
   <Flex>
      <form onSubmit={handleNextTime}>
+      <Button mr={2} colorScheme='facebook' onClick={handleRefresh}>Refresh Current</Button>
       <Button mr={2} type="submit" colorScheme='facebook'>Get next</Button>
      </form>
   </Flex>

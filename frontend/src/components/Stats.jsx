@@ -27,6 +27,11 @@ export default function Stats({isSelected}) {
 
   const useCurrentTimeMode = () => {return useCurrentTime === 'Current'}
 
+  const handleRefresh = () => {
+    setCurrentMoment(undefined)
+    setCurrentTimeString(undefined)
+  }
+
   const moveNext = () => {
     if(useCurrentTimeMode){
         let new_moment = moment(currentMoment).subtract(51, 'seconds');
@@ -109,6 +114,7 @@ export default function Stats({isSelected}) {
      <form onSubmit={handleNextTime}> 
       { useCurrentTimeMode && <Box> {currentTimeString} </Box>}
       { !useCurrentTime && <Box> {startDate} </Box>}
+      <Button mr={2} colorScheme='facebook' onClick={handleRefresh}>Refresh Current</Button>
       <Button mr={2} type="submit" colorScheme='facebook'>Get next</Button>
      </form>
   </Flex>
